@@ -35,6 +35,16 @@ if (Test-Path $outDir) {
     Remove-Item -Path $outDir -Recurse
 }
 
+# Update the version in the project file.
+(Get-Content "$projDir/$appName.csproj") | % {
+    $_ -replace '<AssemblyVersion>.*</AssemblyVersion>', "<AssemblyVersion>$version</AssemblyVersion>"
+} | Set-Content "$projDir/$appName.csproj"
+
+# Update the version in the publishing file.
+(Get-Content "$projDir/Properties/PublishProfiles/ClickOnceProfile.pubxml") | % {
+    $_ -replace '<ApplicationVersion>.*</ApplicationVersion>', "<ApplicationVersion>$version</ApplicationVersion>"
+} | Set-Content "$projDir/Properties/PublishProfiles/ClickOnceProfile.pubxml"
+
 # Publish the application.
 Push-Location $projDir
 try {
@@ -84,7 +94,7 @@ try {
 
     # Copy new application files.
     Write-Output "Copying new files..."
-    Copy-Item -Path "../$outDir/Application Files","../$outDir/$appName.application" `
+    Copy-Item -Path "../$outDir/Application Files","../$outDir/Publish.html","../$outDir/$appName.application" `
         -Destination . -Recurse
 
     # Stage and commit.
